@@ -38,6 +38,8 @@ Donde:
 
 * **Memory**: Dispositivo de almacenamiento accesible por la CPU.
 
-En este punto, los *stored-programs computers* pueden ser modificados, cargados en memory y ejecutados instrucción por instrucción por la CPU. El tiempo de configuración se reduce casi por completo al tiempo necesario para cargar/configurar inputs requeridos por *stored-program computer* (desde ahora en adelante *programs*) y su ejecución.
+En este punto, los *stored-programs computers* reemplazan por completo el proceso de configuracion por cableado, disminuyendo asi el tiempo necesario para ejecutar un programa.
 
-En la década de 1950 las grandes computadoras o mainframes eran grandes, costosos y relativamente lentos. Un operador manualmente cargaba los programas (tarjetas perforadas, cintas de papel o cintas magnéticas) para su ejecución. A medida que las computadoras aumentaban su velocidad de procesamiento, el tiempo requerido por el operador para cargar un nuevo programa se transformó en "dead periods" durante los cuales el poder de cómputo no era utilizado.
+En la década de 1950 los programadores solian escribir sus programas en punched card (tarjetas perforadas) para luego entregarlos a un equipo de operaciones el cual cargaba dichos programas de forma manual en la grandes y costosas computadoras de la epoca utilizando un *Input Devices* (*computer punched card reader* para el caso de targetas perforadas).
+
+A medida que el numero de programas y velocidad de procesamiento de las computadoras aumentaba, el tiempo requerido por el operador para cargar un nuevo programa se transformó en *dead periods* (tiempo en el que la CPU no es utilizada). Tecnicas de Batch processing software fueron introducidad para reducir los tiempos de cargas de programas encolando aquellos listos para ser ejecutados.
