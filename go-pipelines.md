@@ -88,3 +88,70 @@ func main() {
 ```
 
 However, bash processing introduce a new drawback and now all the elements have to be processed entirely by each stage before getting the final results.
+
+**Golang Channels primitives** enables `stream data processing` pipelines and are considered *best practices* when implementing pipelines. Goroutines interacting through an open channel avoid the need of recreating our pipeline for each input, and we can start getting results without the need of waiting for the full stream being processed.
+
+Next code introduces a function which return a stream of inputs:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func readInputs(done <-chan struct{}, n int) <-chan int {
+	stream := make(chan int)
+	go func() {
+		defer close(stream)
+		for i := 1; i <= n; i++ {
+			select {
+			case <-done:
+				return
+			case stream <- i:
+			}
+		}
+	}()
+	return stream
+}
+
+func multiply(x, y int) int {
+	return x * y
+}
+
+func add(x, y int) int {
+	return x + y
+}
+
+func main() {
+	stage1 := func(n int) int {
+		return multiply(n, 2)
+	}
+	stage2 := func(n int) int {
+		return add(n, 1)
+	}
+	pipeline := func(n int) int {
+		return stage2(stage1(n))
+	}
+
+	const Timeout = 30 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	const NroInputs = 100000
+	inputs := readInputs(ctx.Done(), NroInputs)
+	for v := range inputs {
+		fmt.Println(pipeline(v))
+	}
+}
+```
+
+About previous code:
+
+* The expression `ctx, cancel := context.WithTimeout(context.Background(), Timeout)` defines a [done cancellation signal]() with a timeout of 30 seconds.
+* Function `readInputs` receives a done cancellation signal and the number of inputs to produce (100,000 in this example)
+* Each input is obtained from the stream and a new instance of the pipeline is created for each of them.
+* The pipeline processes discrete values.
+* No need to process the entire stream to start getting results from the pipeline processing.
