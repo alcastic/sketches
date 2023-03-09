@@ -46,7 +46,8 @@ func main() {
 }
 ```
 
-Previous code may seems innocent, but in lines 45-47 a new instance of our pipeline is being initialized for each input element. Imagine a scenery of massive amount of inputs (MBs or GBs), it would imply a massive recreation of our pipeline with a massive footprint of memory management in the HEAP.
+Previous code may seems innocent, but the *for loop* is creating a new instance of our pipeline for each input element.
+Imagine a scenery of massive amount of inputs (MBs or GBs), it would imply a massive recreation of our pipeline with a massive footprint of memory management in the HEAP.
 
 In order to avoid recreating our pipeline for each input, the stage definitions of a pipeline can be extended to allow batch processing. For example:
 
@@ -89,9 +90,10 @@ func main() {
 
 However, bash processing introduce a new drawback and now all the elements have to be processed entirely by each stage before getting the final results.
 
-**Golang Channels primitives** enables `stream data processing` pipelines and are considered *best practices* when implementing pipelines. Goroutines interacting through an open channel avoid the need of recreating our pipeline for each input, and we can start getting results without the need of waiting for the full stream being processed.
+**Golang Channels primitives** enables `stream data processing pipelines` and are considered *best practices* when implementing pipelines.
+Goroutines interacting through an open channel avoid the need of recreating our pipeline for each input, and we can start getting results without the need of waiting for the full stream being processed.
 
-Next code introduces a function which return a stream of inputs:
+Now, lets introduce the complete code for our stream data processing:
 
 ```go
 package main
@@ -101,6 +103,37 @@ import (
 	"fmt"
 	"time"
 )
+
+func multiply(done <-chan struct{}, stream <-chan int, y int) <-chan int {
+	outputs := make(chan int)
+	go func() {
+		defer close(outputs)
+		for v := range stream {
+			select {
+			case <-done:
+				return
+			case outputs <- v * y:
+			}
+		}
+	}()
+	return outputs
+}
+
+func add(done <-chan struct{}, stream <-chan int, y int) <-chan int {
+	outputs := make(chan int)
+	go func() {
+		defer close(outputs)
+		for v := range stream {
+			select {
+			case <-done:
+				return
+			case outputs <- v + y:
+			}
+
+		}
+	}()
+	return outputs
+}
 
 func readInputs(done <-chan struct{}, n int) <-chan int {
 	stream := make(chan int)
@@ -117,23 +150,15 @@ func readInputs(done <-chan struct{}, n int) <-chan int {
 	return stream
 }
 
-func multiply(x, y int) int {
-	return x * y
-}
-
-func add(x, y int) int {
-	return x + y
-}
-
 func main() {
-	stage1 := func(n int) int {
-		return multiply(n, 2)
+	stage1 := func(done <-chan struct{}, stream <-chan int) <-chan int {
+		return multiply(done, stream, 2)
 	}
-	stage2 := func(n int) int {
-		return add(n, 1)
+	stage2 := func(done <-chan struct{}, stream <-chan int) <-chan int {
+		return add(done, stream, 1)
 	}
-	pipeline := func(n int) int {
-		return stage2(stage1(n))
+	pipeline := func(done <-chan struct{}, stream <-chan int) <-chan int {
+		return stage2(done, stage1(done, stream))
 	}
 
 	const Timeout = 30 * time.Second
@@ -142,8 +167,8 @@ func main() {
 
 	const NroInputs = 100000
 	inputs := readInputs(ctx.Done(), NroInputs)
-	for v := range inputs {
-		fmt.Println(pipeline(v))
+	for v := range pipeline(ctx.Done(), inputs) {
+		fmt.Println(v)
 	}
 }
 ```
@@ -152,6 +177,88 @@ About previous code:
 
 * The expression `ctx, cancel := context.WithTimeout(context.Background(), Timeout)` defines a [done cancellation signal]() with a timeout of 30 seconds.
 * Function `readInputs` receives a done cancellation signal and the number of inputs to produce (100,000 in this example)
-* Each input is obtained from the stream and a new instance of the pipeline is created for each of them.
 * The pipeline processes discrete values.
-* No need to process the entire stream to start getting results from the pipeline processing.
+* Each indiscrete value is obtained from the input stream and passed to our pipeline with out the need of creating a new instance achiving a low footsprint impact int the heap memory.
+* No need to process the entire stream before getting results from the pipeline.
+
+Finally, and for the sake of code style, here is a equivalent cleaner version:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func multiply(done <-chan struct{}, stream <-chan int, y int) <-chan int {
+	outputs := make(chan int)
+	go func() {
+		defer close(outputs)
+		for v := range stream {
+			select {
+			case <-done:
+				return
+			case outputs <- v * y:
+			}
+		}
+	}()
+	return outputs
+}
+
+func add(done <-chan struct{}, stream <-chan int, y int) <-chan int {
+	outputs := make(chan int)
+	go func() {
+		defer close(outputs)
+		for v := range stream {
+			select {
+			case <-done:
+				return
+			case outputs <- v + y:
+			}
+
+		}
+	}()
+	return outputs
+}
+
+func readInputs(done <-chan struct{}, n int) <-chan int {
+	stream := make(chan int)
+	go func() {
+		defer close(stream)
+		for i := 1; i <= n; i++ {
+			select {
+			case <-done:
+				return
+			case stream <- i:
+			}
+		}
+	}()
+	return stream
+}
+
+func main() {
+	pipeline := func(done <-chan struct{}, stream <-chan int) <-chan int {
+		return multiply(
+			done,
+			add(done, stream, 1),
+			2,
+		)
+	}
+
+	const Timeout = 30 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	const NroInputs = 100000
+	for v := range pipeline(ctx.Done(), readInputs(ctx.Done(), NroInputs)) {
+		fmt.Println(v)
+	}
+}
+```
+
+## Conclusion
+
+Stream data processing pipelines enables the processing of big sets of data thought easy evolve and maintain flows, provides a powerful alternative to improve the heap memory footprint of our software and enable preemptable data processing flows.
+Nevertheless, it is important to be aware of implementing pipelines for small data set of inputs with a simple flow of processing can result in over engineering.
