@@ -48,7 +48,7 @@ func main() {
 
 Previous code may seems innocent, but in lines 45-47 a new instance of our pipeline is being initialized for each input element. Imagine a scenery of massive amount of inputs (MBs or GBs), it would imply a massive recreation of our pipeline with a massive footprint of memory management in the HEAP.
 
-We can avoid the recreation of our pipeline by implementing batch processing as follows:
+In order to avoid recreating our pipeline for each input, the stage definitions of a pipeline can be extended to allow batch processing. For example:
 
 ```go
 package main
@@ -87,4 +87,4 @@ func main() {
 }
 ```
 
-Previous code just initializes our pipeline once. However, with bash processing we have introduced a new drawback, now all the elements have to be processed entirely for each stage before obtaining the final results.
+However, bash processing introduce a new drawback and now all the elements have to be processed entirely by each stage before getting the final results.
