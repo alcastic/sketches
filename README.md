@@ -1,7 +1,5 @@
-# Concurrency
+# Go Concurrency
 
-**English Version** - This Repository  aim to introduce the reader to the concept of Concurrency, explaining its origin and related concepts.
+This Repository  aim to introduce the reader to Golang's concurrency aspects and patterns as straightforward as possible.
 
-**Esparanto Version** - Ĉi tiu deponejo celas enkonduki la leganton al la koncepto de Samtempeco, klarigante ĝian originon kaj rilatajn konceptojn.
-
-**Version Español** Este repositorio tiene como objetivo introducir al lector en el concepto de Concurrencia, explicando su origen y conceptos relacionados.
+The reader is expected to be familiar with Golang syntax and to be familiar with fundamentals of programing.
