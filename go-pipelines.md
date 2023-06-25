@@ -260,5 +260,5 @@ func main() {
 
 ## Conclusion
 
-Stream data processing pipelines enables the processing of big sets of data thought easy evolve and maintain flows, provides a powerful alternative to improve the heap memory footprint of our software and enable preemptable data processing flows.
+Stream data processing pipelines enables the processing of big sets of data throught easy evolve and maintain flows, provides a powerful alternative to improve the heap memory footprint of our software and enable preemptable data processing flows.
 Nevertheless, it is important to be aware of implementing pipelines for small data set of inputs with a simple flow of processing can result in over engineering.
