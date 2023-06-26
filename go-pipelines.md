@@ -1,11 +1,11 @@
 # Pipelines
 
-A pipeline is a chain of data processing units(a.k.a.*stages*), arranged so the output of each unit is the ouput of the next one.
+A pipeline is a chain of data processing units (a.k.a. *stages*), arranged so the output of each unit is the ouput of the next one.
 
 Pipeline allows to split complex data processing flows in smaller, testable and maintainable logical unit, promoting:
 
-* Separation of Cencenr.
-* Stages and functions reusability.
+* Separation of Concerns.
+* Stages and functions re-usability.
 * Single-responsibility principle.
 
 For example, the function f(n) = (n*2)+1 can be reprecented by a pipeline which chain two stages, as follow:
@@ -260,5 +260,5 @@ func main() {
 
 ## Conclusion
 
-Stream data processing pipelines enables the processing of big sets of data throught easy evolve and maintain flows, provides a powerful alternative to improve the heap memory footprint of our software and enable preemptable data processing flows.
+Stream data processing pipelines enables the processing of big sets of data through easy evolve and maintain flows, provides a powerful alternative to improve the heap memory footprint of our software and enable preemptable data processing flows.
 Nevertheless, it is important to be aware of implementing pipelines for small data set of inputs with a simple flow of processing can result in over engineering.

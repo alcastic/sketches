@@ -1,6 +1,6 @@
 # Cancellation Signal 
 
-Golang's goroutines can not force the termination of anothers goroutines, since that would leave all its shared variables in undefined/inconsistent states.
+Golang's goroutines can not force the termination of another goroutines, since that would leave all its shared variables in undefined/inconsistent states.
 
 Next main goroutine example creates a `chan int` and spawns a goroutine in order to stream integers into the channel. Notice how the parent main goroutine has no mechanism to instruct the child goroutine to stop streaming data into the channel.
 
